@@ -1,10 +1,11 @@
 import { ReactDnD } from './components/ReactDnD';
+import { ReactResizable } from './components/ReactResizable';
 
 function App() {
 
   return (
-    <div>
-      Base Url: {process.env.REACT_APP_BASE_URL || "NOT FOUND"}
+    <div >
+      <ReactResizable />
     </div>
   )
 }
