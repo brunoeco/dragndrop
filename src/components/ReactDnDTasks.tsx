@@ -3,6 +3,7 @@ import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautif
 import {v4 as uuid} from 'uuid';
 
 export function ReactDnD() {
+  const [tasksColumnId, setTasksColumnId] = useState(uuid());
 
   const items = [
     {id: uuid(), content: 'Tarefa 1'},
@@ -10,7 +11,7 @@ export function ReactDnD() {
   ];
 
   const initialColumns = {
-    [uuid()]: {
+    [tasksColumnId]: {
       name: 'Tasks',
       items: items
     },
@@ -38,20 +39,42 @@ export function ReactDnD() {
       const destItems = [...destColumn.items];
       const [removed] = sourceItems.splice(source.index, 1);
       
-      destItems.splice(destination.index, 0, removed);
+      if(source.droppableId === tasksColumnId) {
+        destItems.splice(destination.index, 0, {
+            id: uuid(),
+            content: removed.content
+        });
 
-      setColumns({
-          ...columns,
-          [destination.droppableId]: {
-            ...destColumn,
-            items: destItems
-          },
-          [source.droppableId]: {
-            ...sourceColumn,
-            items: sourceItems
-          }
-        })
-    
+        setColumns({
+            ...columns,
+            [destination.droppableId]: {
+              ...destColumn,
+              items: destItems
+            }
+          })
+      } else if(result.destination.droppableId === tasksColumnId){
+        setColumns({
+            ...columns,
+            [source.droppableId]: {
+              ...sourceColumn,
+              items: sourceItems
+            }
+          })
+      } else {
+        destItems.splice(destination.index, 0, removed);
+
+        setColumns({
+            ...columns,
+            [destination.droppableId]: {
+              ...destColumn,
+              items: destItems
+            },
+            [source.droppableId]: {
+              ...sourceColumn,
+              items: sourceItems
+            }
+          })
+      }
     } else {
       const column = columns[source.droppableId];
       const copiedItems = [...column.items];
@@ -67,34 +90,6 @@ export function ReactDnD() {
       })
     }
   } 
-
-  const handleAddTask = (columnId: string) => {
-    const task = {id: uuid(), content: 'Tarefa 2'};
-    const destColumn = columns[columnId];
-    const destItems = [...destColumn.items];
-    
-    destItems.splice(-1, 0, task);
-
-    setColumns({
-      ...columns,
-      [columnId]: {
-        ...destColumn,
-        items: destItems
-      }
-    })
-  }
-
-  const handleAddColumn = () => {
-    const column = {
-      name: 'personalizada',
-      items: []
-    };
-
-    setColumns({
-      ...columns,
-      [uuid()]: column
-    })
-  }
 
   return (
     <div style={{
@@ -146,7 +141,6 @@ export function ReactDnD() {
                             </Draggable>
                           )
                         })}  
-                        <button type='button' onClick={() => handleAddTask(id)}>Add Task</button>
                         {provided.placeholder}
                       </div>
                     )
@@ -156,10 +150,6 @@ export function ReactDnD() {
           )
         })}
       </DragDropContext>
-
-        <div>
-          <button type='button' onClick={handleAddColumn}>Add Column</button>
-        </div>
     </div>
   )
 }
